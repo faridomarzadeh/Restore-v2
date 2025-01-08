@@ -23,6 +23,7 @@ export const counterSlice = createSlice({
 
 export const {increment , decrement} = counterSlice.actions;
 
+//legacy slices
 export function incrementLegacy(amount = 1){
     return {
         type: 'increment',

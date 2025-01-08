@@ -1,9 +1,10 @@
-import { ShoppingBag, ShoppingCart } from "@mui/icons-material";
+import { ShoppingCart } from "@mui/icons-material";
 import {
   AppBar,
   Badge,
   Box,
   IconButton,
+  LinearProgress,
   List,
   ListItem,
   Switch,
@@ -11,10 +12,8 @@ import {
   Typography,
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
-
-type Props = {
-  handleSwitch: () => void;
-};
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { toggleTheme } from "./uiSlice";
 
 const midLinks = [
   { title: "catalog", path: "/catalog" },
@@ -27,61 +26,70 @@ const rightLinks = [
   { title: "register", path: "/register" },
 ];
 
-const linksStyle = { 
+const linksStyle = {
   color: "inherit",
   typography: "h6",
-  textDecoration: 'none',
-  '&:hover': {
-    color: 'grey.500'
+  textDecoration: "none",
+  "&:hover": {
+    color: "grey.500",
   },
-  '&.active': {
-    color: '#baecf9'
-  }
-   }
+  "&.active": {
+    color: "#baecf9",
+  },
+};
 
-export default function NavBar({ handleSwitch }: Props) {
+export default function NavBar() {
   const label = { inputProps: { "aria-label": "Dark" } };
+
+  const { isLoading, darkMode } = useAppSelector((state) => state.ui);
+
+  const dispatch = useAppDispatch();
+  
   return (
     <AppBar position="fixed">
-      <Toolbar sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <Box display={'flex'} alignItems={'center'}>
-        <Typography variant="h6" component={NavLink} to={"/"} sx={linksStyle}>
-          RE-STORE
-        </Typography>
-        <Switch {...label} onChange={handleSwitch} color="primary" />
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Box display={"flex"} alignItems={"center"}>
+          <Typography variant="h6" component={NavLink} to={"/"} sx={linksStyle}>
+            RE-STORE
+          </Typography>
+          <Switch {...label} onChange={()=> dispatch(toggleTheme())} color="primary" checked={darkMode===true}/>
         </Box>
         <List sx={{ display: "flex" }}>
           {midLinks.map(({ title, path }) => (
-            <ListItem
-              component={NavLink}
-              to={path}
-              key={path}
-              sx={linksStyle}
-            >
+            <ListItem component={NavLink} to={path} key={path} sx={linksStyle}>
               {title.toUpperCase()}
             </ListItem>
           ))}
         </List>
-        <Box display={'flex'} alignItems={'center'}>
-        <IconButton size="large">
-          <Badge badgeContent="4" color="secondary">
-            <ShoppingCart />
-          </Badge>
-        </IconButton>
-        <List sx={{ display: "flex" }}>
-          {rightLinks.map(({ title, path }) => (
-            <ListItem
-              component={NavLink}
-              to={path}
-              key={path}
-              sx={linksStyle}
-            >
-              {title.toUpperCase()}
-            </ListItem>
-          ))}
-        </List>
+        <Box display={"flex"} alignItems={"center"}>
+          <IconButton size="large">
+            <Badge badgeContent="4" color="secondary">
+              <ShoppingCart />
+            </Badge>
+          </IconButton>
+          <List sx={{ display: "flex" }}>
+            {rightLinks.map(({ title, path }) => (
+              <ListItem
+                component={NavLink}
+                to={path}
+                key={path}
+                sx={linksStyle}
+              >
+                {title.toUpperCase()}
+              </ListItem>
+            ))}
+          </List>
         </Box>
       </Toolbar>
+      {isLoading && <Box sx={{width: '100%'}}>
+        <LinearProgress color="secondary"/>
+        </Box>}
     </AppBar>
   );
 }

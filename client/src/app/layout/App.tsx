@@ -1,16 +1,10 @@
-import { useState } from "react";
-import Catalog from "../../features/catalog/Catalog";
 import { Box, Container, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import NavBar from "./NavBar";
 import { Outlet } from "react-router-dom";
-
+import { useAppSelector } from "../store/store";
 function App() {
 
-  const [darkMode, setDarkMode] = useState(false);
-
-  const handleSwitch = () =>{
-    setDarkMode(prevState => !prevState);
-  }
+  const {darkMode} = useAppSelector(state => state.ui);
 
   const theme = createTheme({
     palette: {
@@ -24,7 +18,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <NavBar handleSwitch={handleSwitch} />
+      <NavBar />
       <CssBaseline/>
       <Box sx={{minHeight: '100vh',
         background: darkMode ? '#121212' : '#eaeaea'
