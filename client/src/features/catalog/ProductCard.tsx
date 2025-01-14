@@ -8,12 +8,15 @@ import {
 } from "@mui/material";
 import { Product } from "../../app/models/product";
 import { Link } from "react-router-dom";
+import { useAddItemsToBasketMutation } from "../basket/basketApi";
 
 type Props = {
   product: Product;
 };
 
 export default function ProductCard({ product }: Props) {
+
+  const [addItemToBasket, {isLoading}] = useAddItemsToBasketMutation();
   return (
     <Card
       elevation={3}
@@ -46,7 +49,10 @@ export default function ProductCard({ product }: Props) {
       </CardContent>
 
       <CardActions sx={{ justifyContent: "space-between" }}>
-        <Button>Add to Cart</Button>
+        <Button
+        disabled={isLoading}
+        onClick={() => addItemToBasket({productId: product.id,quantity:1})}
+        >Add to Cart</Button>
         <Button component={Link} to={`/catalog/${product.id}`}>
           View Details
         </Button>

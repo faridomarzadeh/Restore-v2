@@ -11,7 +11,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { toggleTheme } from "./uiSlice";
 
@@ -68,7 +68,7 @@ export default function NavBar() {
           ))}
         </List>
         <Box display={"flex"} alignItems={"center"}>
-          <IconButton size="large">
+          <IconButton size="large" component={Link} to='/basket'>
             <Badge badgeContent="4" color="secondary">
               <ShoppingCart />
             </Badge>

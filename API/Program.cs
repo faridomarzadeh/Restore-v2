@@ -3,7 +3,6 @@ using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-var  myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // Add services to the container.
 
@@ -20,11 +19,10 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
-app.UseCors(myAllowSpecificOrigins);
 
 app.UseCors(opt => {
 
-    opt.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:3000");
+    opt.AllowAnyHeader().AllowCredentials().AllowAnyMethod().WithOrigins("https://localhost:3000");
 
 });
 app.MapControllers();
