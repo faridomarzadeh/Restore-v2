@@ -14,6 +14,7 @@ import {
 import { Link, NavLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { toggleTheme } from "./uiSlice";
+import { useFetchBasketQuery } from "../../features/basket/basketApi";
 
 const midLinks = [
   { title: "catalog", path: "/catalog" },
@@ -45,6 +46,10 @@ export default function NavBar() {
 
   const dispatch = useAppDispatch();
   
+  const {data:basket} = useFetchBasketQuery();
+
+  const totalItemCount = basket?.items.reduce((sum,item) => sum + item.quantity, 0)
+
   return (
     <AppBar position="fixed">
       <Toolbar
@@ -69,7 +74,7 @@ export default function NavBar() {
         </List>
         <Box display={"flex"} alignItems={"center"}>
           <IconButton size="large" component={Link} to='/basket'>
-            <Badge badgeContent="4" color="secondary">
+            <Badge badgeContent={totalItemCount} color="secondary">
               <ShoppingCart />
             </Badge>
           </IconButton>
