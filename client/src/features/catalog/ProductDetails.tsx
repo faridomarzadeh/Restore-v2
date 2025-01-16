@@ -12,14 +12,47 @@ import {
   Typography,
 } from "@mui/material";
 import { useGetProductQuery } from "./catalogApi";
+import { useAddItemsToBasketMutation, useFetchBasketQuery, useRemoveItemsFromBasketMutation } from "../basket/basketApi";
+import { ChangeEvent, useEffect, useState } from "react";
+import { currencyFormat } from "../../lib/util";
 
 export default function ProductDetails() {
   const { id } = useParams();
+
+  const {data: basket} = useFetchBasketQuery();
+  const [addItemToBasket] = useAddItemsToBasketMutation();
+  const [removeItemsFromBasket] = useRemoveItemsFromBasketMutation();
+
+  const item = basket?.items.find(p=>p.productId == +id!);
+
+  const [quantity, setQuantity] = useState(0);
+
+  useEffect(() => {
+    if(item) setQuantity(item.quantity);
+  },[item])
 
   const {data: product, isLoading} = useGetProductQuery( id? +id : 0);
 
   if (!product  || isLoading) return <div>Loding...</div>;
 
+
+  const handleUpdateQuantity = () => {
+
+    const updatedQuantity = item? Math.abs(quantity - item.quantity): quantity;
+
+    if(!item || quantity > item.quantity)
+      addItemToBasket({product,quantity:updatedQuantity});
+
+    else if(item && quantity < item.quantity)
+      removeItemsFromBasket({productId:item.productId, quantity:updatedQuantity});
+  }
+
+  const handleChangeValue = (event: ChangeEvent<HTMLInputElement>) => {
+
+    const value = +event.currentTarget.value;
+
+    if(value>=0) setQuantity(value);
+  }
 
   const productDetails = [
     {label: 'Name', value: product.name},
@@ -42,7 +75,7 @@ export default function ProductDetails() {
         <Typography variant="h3">{product.name}</Typography>
         <Divider sx={{ mb: 2 }} />
         <Typography variant="h4" color="secondary">
-          ${(product.price / 100).toFixed(2)}
+          {currencyFormat(product.price)}
         </Typography>
         <TableContainer>
           <Table sx={{
@@ -66,18 +99,21 @@ export default function ProductDetails() {
                 type="number"
                 label="Quantity in basket"
                 fullWidth
-                defaultValue={1}
+                onChange={handleChangeValue}
+                value={quantity}
                 />
             </Grid2>
             <Grid2 size={6} >
                 <Button
+                disabled={(item && item.quantity==quantity) || (!item && quantity<=0)}
                 color="primary"
                 size="large"
                 variant="contained"
                 fullWidth
                 sx={{height:'55px'}}
+                onClick={() => handleUpdateQuantity()}
                 >
-                    Add to basket
+                   {(!item && quantity>0)? 'Add to basket' : 'Update basket'} 
                 </Button>
             </Grid2>
         </Grid2>

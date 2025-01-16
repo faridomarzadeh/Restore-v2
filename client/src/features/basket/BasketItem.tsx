@@ -5,6 +5,7 @@ import {
   useAddItemsToBasketMutation,
   useRemoveItemsFromBasketMutation,
 } from "./basketApi";
+import { currencyFormat } from "../../lib/util";
 
 type Props = {
   item: Item;
@@ -41,10 +42,10 @@ export default function BasketItem({ item }: Props) {
           <Typography variant="h6">{item.name}</Typography>
           <Box display="flex" alignItems={"center"} gap={3}>
             <Typography sx={{ fontSize: "1.1rem" }}>
-              ${(item.price / 100).toFixed(2)} x {item.quantity}
+              {currencyFormat(item.price * item.quantity)}
             </Typography>
             <Typography sx={{ fontSize: "1.1rem" }} color="primary">
-              ${(item.price / 100).toFixed(2)}
+              {currencyFormat(item.price)}
             </Typography>
           </Box>
           <Grid2 display="flex" alignItems="center" gap={2}>
@@ -62,7 +63,7 @@ export default function BasketItem({ item }: Props) {
             </IconButton>
             <Typography variant="h6">{item.quantity}</Typography>
             <IconButton
-            onClick={() => addItemToBasket({product: {...item, description:'',quantityInStock: item.quantity,id:item.productId},quantity:1})}
+            onClick={() => addItemToBasket({product: item, quantity:1})}
               sx={{ border: 1, borderRadius: 1, minHeight: 0 }}
               color="success"
             >
