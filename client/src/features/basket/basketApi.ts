@@ -27,17 +27,22 @@ export const BasketApi = createApi({
             },
             //invalidate the cache for getting basket
             onQueryStarted: async({product,quantity},{queryFulfilled,dispatch}) => {
-
+                let isNewBasket = false;
                 const result = dispatch(BasketApi.util.updateQueryData('fetchBasket', undefined, (draft)=>{
                     const productId = isBasketItem(product)? product.productId:product.id;
-
+                    isNewBasket = !draft?.basketId;
+                    if(!isNewBasket)
+                    {
                     const existingItem = draft.items.find(p=>p.productId==productId);
                     if(existingItem) existingItem.quantity+=quantity;
-                    else draft.items.push(isBasketItem(product)? product: new Item(product,quantity));
+                    else draft.items.push(isBasketItem(product)? product: {...product, productId:product.id, quantity});
+                    }
                 }))
 
                 try {
                     await queryFulfilled;
+                    if(isNewBasket)
+                        dispatch(BasketApi.util.invalidateTags(['Basket']));
                 } catch (error) {
                     console.log(error);
                     result.undo();
