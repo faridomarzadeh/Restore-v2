@@ -1,9 +1,9 @@
-import { Box, Checkbox, FormControlLabel, FormGroup, Paper, TextField } from "@mui/material";
-import { useGetFiltersQuery } from "./catalogApi"
+import { Box, Paper } from "@mui/material";
 import Search from "./Search";
 import RadioButtonGroup from "../../app/shared/components/RadioButtonGroup";
 import { useAppDispatch, useAppSelector } from "../../app/store/store";
-import { setOrderBy } from "./catalogSlice";
+import { setBrands, setOrderBy, setTypes } from "./catalogSlice";
+import CheckboxButtons from "../../app/shared/components/CheckboxButtons";
 
 const sortOptions = [
     {value: 'name', label: 'Alphabetical'},
@@ -11,9 +11,12 @@ const sortOptions = [
     {value: 'priceDesc', label: 'Price: High to Low'},
 
 ]
-export default function Filters() {
-    const {data} = useGetFiltersQuery();
-    const {orderBy} = useAppSelector(state=>state.catalog);
+
+type Props = {
+    filterData: {brands: string[], types: string[]}
+}
+export default function Filters({filterData: data}:Props) {
+    const {orderBy, brands, types} = useAppSelector(state=>state.catalog);
     const dispatch = useAppDispatch();
     
   return (
@@ -28,29 +31,19 @@ export default function Filters() {
             />
         </Paper>
         <Paper sx={{p:3}}>
-            <FormGroup>
-                {data && data.brands.map((item) => (
-                    <FormControlLabel
-                    key={item}
-                    control={<Checkbox sx={{py:0.7, fontSize: 40}} color="secondary"/>}
-                    label={item}
-                    >
-                        </FormControlLabel>
-                ))}
-            </FormGroup>
+            <CheckboxButtons
+            items={data.brands}
+            checked={brands}
+            onChange={(items:string[]) => dispatch(setBrands(items))}
+            />
         </Paper>
 
         <Paper sx={{p:3}}>
-            <FormGroup>
-                {data && data.types.map((item) => (
-                    <FormControlLabel
-                    key={item}
-                    control={<Checkbox sx={{py:0.7, fontSize: 40}} color="secondary"/>}
-                    label={item}
-                    >
-                        </FormControlLabel>
-                ))}
-            </FormGroup>
+        <CheckboxButtons
+            items={data.types}
+            checked={types}
+            onChange={(items:string[]) => dispatch(setTypes(items))}
+            />
         </Paper>
     </Box>
   )
