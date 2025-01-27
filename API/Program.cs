@@ -29,7 +29,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
 
 app.UseAuthentication();
-app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseCors(opt => {
 
