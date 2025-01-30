@@ -1,8 +1,26 @@
 import { LockOutlined } from "@mui/icons-material";
 import { Box, Button, Container, Paper, TextField, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginSchema, LoginSchema } from "../../lib/schemas/loginSchema";
+import { useForm} from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useLoginMutation } from "./accountApi";
 
 export const LoginForm = () => {
+
+
+  const [login, {isLoading}] = useLoginMutation();
+
+  const { register, handleSubmit, formState: {errors} } = useForm<LoginSchema>({
+    mode: 'onTouched',
+    resolver: zodResolver(loginSchema)
+  });
+
+  const navigate = useNavigate();
+  const onSubmit = async (data: LoginSchema) => {
+    const result = await login(data);
+    if(!result.error) navigate('/catalog');
+  }
   return (
     <Container maxWidth="sm" sx={{ borderRadius: 3 }} component={Paper}>
       <Box
@@ -20,10 +38,25 @@ export const LoginForm = () => {
         width='100%'
         gap={3}
         marginY={3}
+        onSubmit={handleSubmit(onSubmit)}
           >
-            <TextField fullWidth label='Email' autoFocus/>
-            <TextField fullWidth label='Password' type="password"/>
-            <Button variant="contained">Sign In</Button>
+            <TextField 
+            fullWidth 
+            label='Email' 
+            autoFocus
+            {...register('email')}
+            error ={!!errors.email}
+            helperText={errors.email?.message}
+            />
+            <TextField
+            fullWidth
+            label='Password' 
+            type="password"
+            {...register('password')}
+            error ={!!errors.password}
+            helperText={errors.password?.message}
+            />
+            <Button type="submit" variant="contained" disabled={isLoading}>Sign In</Button>
             <Typography sx={{textAlign:'center'}}>
                 Don't have an account?
                 <Typography sx={{ml:1, textDecoration:'none'}} color="primary" component={Link} to={'/register'}>Sign Up</Typography>
@@ -33,3 +66,4 @@ export const LoginForm = () => {
     </Container>
   );
 };
+
