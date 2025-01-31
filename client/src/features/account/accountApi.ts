@@ -3,6 +3,8 @@ import { baseQueryWithErrorHandling } from "../../app/api/baseApi";
 import { User } from "../../app/models/user";
 import { LoginSchema } from "../../lib/schemas/loginSchema";
 import { router } from "../../routes/Routes";
+import { toast } from "react-toastify";
+import { RegisterSchema } from "../../lib/schemas/registerSchema";
 
 export const AccountApi = createApi({
     reducerPath: 'acountApi',
@@ -27,12 +29,23 @@ export const AccountApi = createApi({
                 }
             }
         }),
-        register: builder.mutation<void,object>({
+        register: builder.mutation<void,RegisterSchema>({
             query: (creds) => {
                 return {
                     url: 'account/register',
                     method: 'POST',
                     body: creds
+                }
+            },
+            onQueryStarted: async(_, {queryFulfilled}) => {
+
+                try {
+                    await queryFulfilled;
+                    toast.success('registeration successful - you can now sign in')
+                    router.navigate('/login')
+                } catch (error) {
+                    console.log(error);
+                    throw error;
                 }
             }
         }),
@@ -63,4 +76,4 @@ export const AccountApi = createApi({
 })
 
 
-export const {useLoginMutation, useRegisterMutation, useUserInfoQuery, useLogoutMutation} = AccountApi;
+export const {useLoginMutation, useRegisterMutation, useUserInfoQuery, useLogoutMutation, useLazyUserInfoQuery} = AccountApi;
