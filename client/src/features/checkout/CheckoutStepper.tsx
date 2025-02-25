@@ -1,6 +1,7 @@
 import { Box, Button, Checkbox, FormControlLabel, Paper, Step, StepLabel, Stepper } from "@mui/material";
-import { AddressElement } from "@stripe/react-stripe-js";
+import { AddressElement, PaymentElement } from "@stripe/react-stripe-js";
 import { useState } from "react"
+import Review from "./Review";
 
 const steps = ['Address', 'Payment', 'Review'];
 
@@ -38,10 +39,10 @@ export default function CheckoutStepper() {
                 />
             </Box>
             <Box display={activeStep===1 ? 'block': 'none'}>
-                Payment
+                <PaymentElement/>
             </Box>
             <Box display={activeStep===2 ? 'block': 'none'}>
-                Review
+                <Review/>
             </Box>
         </Box>
         <Box display='flex' justifyContent='space-between' paddingTop={2}>
