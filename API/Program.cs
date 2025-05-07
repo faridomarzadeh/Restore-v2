@@ -19,6 +19,7 @@ builder.Services.AddCors();
 builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddScoped<PaymentsService>();
 
+
 builder.Services.AddIdentityApiEndpoints<User>(opt => {
     opt.User.RequireUniqueEmail = true;
 })
@@ -35,7 +36,7 @@ app.UseAuthorization();
 
 app.UseCors(opt => {
 
-    opt.AllowAnyHeader().AllowCredentials().AllowAnyMethod().WithOrigins("https://localhost:3000");
+    opt.AllowAnyHeader().AllowCredentials().AllowAnyMethod().WithOrigins("https://localhost:3000","https://localhost:5001");
 
 });
 app.MapControllers();
