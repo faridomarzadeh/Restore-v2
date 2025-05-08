@@ -32,6 +32,7 @@ import { currencyFormat } from "../../lib/util";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { LoadingButton} from '@mui/lab'
+import { useCreateOrderMutation } from "../order/orderApi";
 
 const steps = ["Address", "Payment", "Review"];
 
@@ -42,6 +43,7 @@ export default function CheckoutStepper() {
   const [submitting, setSubmitting] = useState(false);
   const [addressChecked, setAddressChecked] = useState(false);
   const [updateAddress] = useUpdateUserAddressMutation();
+  const [createOrder] = useCreateOrderMutation();
   const elements = useElements();
   const stripe = useStripe();
   const [addressComplete, setAddressComplete] = useState(false);
@@ -87,7 +89,9 @@ export default function CheckoutStepper() {
     try {
         if(!basket?.clientSecret || !confirmationToken) 
             throw new Error('Unable to process payment');
-
+        
+        const orderModel = await getOrderModel();
+        const orderResult = await createOrder(orderModel);
         const paymentResult = await stripe?.confirmPayment({
             redirect: 'if_required',
             clientSecret: basket.clientSecret,
@@ -98,7 +102,7 @@ export default function CheckoutStepper() {
 
         if(paymentResult?.paymentIntent?.status==='succeeded')
         {
-            navigate("/checkout/success");
+            navigate("/checkout/success", {state: orderResult});
             clearBasket();
         }
         else if(paymentResult?.error)
@@ -123,6 +127,13 @@ export default function CheckoutStepper() {
     }
   }
 
+  const getOrderModel = async () => {
+    const shippingAddress = await getStripeAddress();
+    const paymentSummary = confirmationToken?.payment_method_preview.card;
+    if(!shippingAddress || !paymentSummary) throw new Error('Problem creating order');
+
+    return {shippingAddress, paymentSummary};
+  }
   const getStripeAddress = async () => {
     const addressElement = elements?.getElement("address");
 
