@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { useLogoutMutation } from "../../features/account/accountApi";
 import { User } from "../models/user";
+import { Link } from "react-router-dom";
 
 type Props = {
   user: User;
@@ -48,7 +49,7 @@ export default function UserMenu({ user, style }: Props) {
           </ListItemIcon>
           <ListItemText>My profile</ListItemText>
         </MenuItem>
-        <MenuItem>
+        <MenuItem component={Link} to='/orders'>
           <ListItemIcon>
             <History />
           </ListItemIcon>
