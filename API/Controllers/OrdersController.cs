@@ -14,14 +14,14 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Controllers
 {
     [Authorize]
-    public class OrdersController (StoreContext context): BaseApiController
+    public class OrdersController(StoreContext context) : BaseApiController
     {
         [HttpGet]
         public async Task<ActionResult<List<OrderDto>>> GetOrders()
         {
             var orders = await context.Orders
             .ProjectToDto()
-            .Where( x=> x.BuyerEmail == User.GetUsername())
+            .Where(x => x.BuyerEmail == User.GetUsername())
             .ToListAsync();
 
             return orders;
@@ -32,10 +32,10 @@ namespace API.Controllers
         {
             var order = await context.Orders
             .ProjectToDto()
-            .Where(x => x.BuyerEmail == User.GetUsername() && id==x.Id)
+            .Where(x => x.BuyerEmail == User.GetUsername() && id == x.Id)
             .FirstOrDefaultAsync();
 
-            if(order == null) return NotFound();
+            if (order == null) return NotFound();
 
             return order;
         }
@@ -45,39 +45,47 @@ namespace API.Controllers
         {
             var basket = await context.Baskets.GetBasketAsync(Request.Cookies["basketId"]);
 
-            if(basket==null || basket.Items.Count==0 || string.IsNullOrEmpty(basket.PaymentIntentId))
+            if (basket == null || basket.Items.Count == 0 || string.IsNullOrEmpty(basket.PaymentIntentId))
                 return BadRequest("Basket is empty or not found");
 
             var items = CreateOrderItems(basket.Items);
 
-            if(items==null)
-            return BadRequest("Some Items out of Quantity");
+            if (items == null)
+                return BadRequest("Some Items out of Quantity");
 
-            var subtotal = items.Sum( x=> x.Price * x.Quantity);
+            var subtotal = items.Sum(x => x.Price * x.Quantity);
 
             var deliveryFee = CalculateDeliveryFee(subtotal);
 
-            var order = new Order
+            var order = await context.Orders
+            .Include(x => x.OrderItems)
+            .FirstOrDefaultAsync(x => x.PaymentIntentId == basket.PaymentIntentId);
+
+            if (order == null)
             {
-                OrderItems = items,
-                BuyerEmail = User.GetUsername(),
-                ShippingAddress = orderDto.ShippingAddress,
-                DeliveryFee = deliveryFee,
-                Subtotal = subtotal,
-                PaymentSummary = orderDto.PaymentSummary,
-                PaymentIntentId = basket.PaymentIntentId
-            };
+                order = new Order
+                {
+                    OrderItems = items,
+                    BuyerEmail = User.GetUsername(),
+                    ShippingAddress = orderDto.ShippingAddress,
+                    DeliveryFee = deliveryFee,
+                    Subtotal = subtotal,
+                    PaymentSummary = orderDto.PaymentSummary,
+                    PaymentIntentId = basket.PaymentIntentId
+                };
 
-            context.Orders.Add(order);
+                context.Orders.Add(order);
+            }
+            else
+            {
+                order.OrderItems = items;
+            }
 
-            context.Baskets.Remove(basket);
-            Response.Cookies.Delete("basketId");
+            var result = await context.SaveChangesAsync() > 0;
 
-            var result = await context.SaveChangesAsync() >0;
+            if (!result) return BadRequest("Problem creating order");
 
-            if(!result) return BadRequest("Problem creating order");
-
-            return CreatedAtAction(nameof(GetOrderDetails), new {id = order.Id}, order.ToDto());
+            return CreatedAtAction(nameof(GetOrderDetails), new { id = order.Id }, order.ToDto());
         }
 
         private long CalculateDeliveryFee(long subtotal)
@@ -91,7 +99,7 @@ namespace API.Controllers
 
             foreach (var item in items)
             {
-                if(item.Product.QuantityInStock < item.Quantity) return null;
+                if (item.Product.QuantityInStock < item.Quantity) return null;
 
                 orderItems.Add(new OrderItem
                 {
