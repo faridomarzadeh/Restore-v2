@@ -29,6 +29,9 @@ builder.Services.AddIdentityApiEndpoints<User>(opt => {
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 
 app.UseAuthentication();
@@ -41,6 +44,8 @@ app.UseCors(opt => {
 });
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<User>();
+
+app.MapFallbackToController("Index","Fallback");
 
 DbInitializer.InitDb(app);
 
