@@ -17,8 +17,11 @@ export const createProductSchema = z.object({
     type: z.string({required_error: 'Type is required'}),
     brand: z.string({required_error: 'Brand is required'}),
     quantityInStock: z.coerce.number({required_error: 'Quantity is required'}).min(1, 'Qunatity must be at least 1'),
-    file: fileSchema
-
+    pictureUrl: z.string().optional(),
+    file: fileSchema.optional()
+}).refine((data) => data.pictureUrl || data.file,{
+    message: 'Please provide an image',
+    path: ['file']
 });
 
 export type CreateProductSchema = z.infer<typeof createProductSchema>;

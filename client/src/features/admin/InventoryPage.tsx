@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/store/store'
 import { useGetProductsQuery } from '../catalog/catalogApi';
 import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
@@ -7,16 +7,44 @@ import { Delete, Edit } from '@mui/icons-material';
 import AppPagination from '../../app/shared/components/AppPagination';
 import { setPageNumber } from '../catalog/catalogSlice';
 import ProductForm from './ProductForm';
+import { Product } from '../../app/models/product';
+import { useDeleteProductMutation } from './adminApi';
 
 export default function InventoryPage() {
 
   const productParams = useAppSelector(state => state.catalog);
-  const {data} = useGetProductsQuery(productParams);
+  const {data, refetch} = useGetProductsQuery(productParams);
   const dispatch = useAppDispatch();
-
   const [editMode, setEditMode] = useState(false);
+  const[selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  if(editMode) return <ProductForm/>
+  const [deleteProduct] = useDeleteProductMutation();
+
+  const handleDelete = async (id:number) => {
+    try {
+      await deleteProduct(id).unwrap();
+      refetch();
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+
+  const handleSelectProduct = (product:Product) => {
+    setSelectedProduct(product);
+    setEditMode(true);
+  }
+
+  const handleCancel = () => {
+    setEditMode(false);
+    setSelectedProduct(null);
+  }
+
+  if(editMode) return <ProductForm
+   handleCancel = {handleCancel}
+    product={selectedProduct}
+    refetch={refetch}
+    />
   
   return (
     <>
@@ -63,8 +91,8 @@ export default function InventoryPage() {
               <TableCell align='center'> {product.brand}</TableCell>
               <TableCell align='center'> {product.quantityInStock}</TableCell>
               <TableCell align='right'>
-                <Button startIcon={<Edit/>} />
-                <Button startIcon={<Delete/>} color='error'/>
+                <Button onClick={() => handleSelectProduct(product)} startIcon={<Edit/>} />
+                <Button onClick={() => handleDelete(product.id)} startIcon={<Delete/>} color='error'/>
               </TableCell>
             </TableRow>
           ))}
